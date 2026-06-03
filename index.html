@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AbuseApp</title>
+    <meta name="description" content="AbuseApp" />
+    <link rel="icon" type="image/png" href="./assets/favicon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="stars-background" aria-hidden="true">
+      <div class="stars-layer stars-layer-small"></div>
+      <div class="stars-layer stars-layer-medium"></div>
+      <div class="stars-layer stars-layer-large"></div>
+    </div>
+
+    <div class="site-shell">
+      <main class="cover" aria-label="AbuseApp cover">
+        <img
+          class="cover-image"
+          src="./Untitled15_20260501125008-Photoroom.png"
+          alt=""
+          aria-hidden="true"
+        />
+      </main>
+
+      <section class="roadmap-section" aria-label="Інструкція">
+        <svg class="roadmap-timeline" preserveAspectRatio="none">
+          <path class="timeline-path" d="" stroke="#ffffff" stroke-width="3" stroke-dasharray="12,8" fill="none" opacity="0.7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+
+        <div class="roadmap-container">
+          <div class="roadmap-item roadmap-item-left">
+            <div class="roadmap-content">
+              <img src="./assets/app.png" alt="Головний екран" class="roadmap-image" />
+              <div class="roadmap-text">
+                <h2>Dashboard</h2>
+                <p>Mass launch, Calendar>Plans list, Recent actions, Account statistics, Task list</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="roadmap-item roadmap-item-right">
+            <div class="roadmap-content">
+              <div class="roadmap-text">
+                <h2>Accounts List</h2>
+                <p>Add hashtag, notes, name, open/close account</p>
+              </div>
+              <img src="./assets/Accounts-list.png" alt="Список акаунтів" class="roadmap-image" />
+            </div>
+          </div>
+
+          <div class="roadmap-item roadmap-item-left">
+            <div class="roadmap-content">
+              <img src="./assets/Mass-launch.png" alt="Масовий запуск" class="roadmap-image" />
+              <div class="roadmap-text">
+                <h2>Mass Launch</h2>
+                <p>Add/delete project, open all at once, "Mix" mode, progress bar, etc..</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="footer-section" aria-label="Footer">
+        <div class="footer-content">
+          <div class="footer-line"></div>
+          <p class="footer-text">Built for fun</p>
+        </div>
+      </section>
+
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="AbuseApp">
+          <img src="./assets/logo-square.png" alt="AbuseApp" class="brand-mark" />
+          <strong class="brand-title">AbuseApp</strong>
+        </a>
+
+        <div class="topbar-actions">
+          <div class="language-switcher">
+            <button class="language-button" id="languageButton" aria-label="Вибрати мову">
+              <span class="language-current">EN</span>
+            </button>
+            <div class="language-dropdown" id="languageDropdown">
+              <button class="language-option" data-lang="en">EN</button>
+              <button class="language-option" data-lang="ua">UA</button>
+              <button class="language-option" data-lang="ru">RU</button>
+            </div>
+          </div>
+
+          <a
+            class="button button-download button-compact"
+            id="downloadButton"
+            href="https://github.com/jenyok3/AbuseAppUpdates/releases/latest"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span>Download</span>
+          </a>
+        </div>
+      </header>
+    </div>
+
+    <div class="floating-icons">
+      <a href="https://t.me/hrprph" target="_blank" rel="noreferrer" class="floating-icon" aria-label="Підтримка">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z"/>
+        </svg>
+      </a>
+      <a href="https://t.me/abuse_app" target="_blank" rel="noreferrer" class="floating-icon" aria-label="Telegram">
+        <svg viewBox="57 77 142 142" xmlns="http://www.w3.org/2000/svg" width="28" height="28" preserveAspectRatio="xMidYMid">
+          <path fill="#FFF" d="M57.94 126.648c37.32-16.256 62.2-26.974 74.64-32.152 35.56-14.786 42.94-17.354 47.76-17.441 1.06-.017 3.42.245 4.96 1.49 1.28 1.05 1.64 2.47 1.82 3.467.16.996.38 3.266.2 5.038-1.92 20.24-10.26 69.356-14.5 92.026-1.78 9.592-5.32 12.808-8.74 13.122-7.44.684-13.08-4.912-20.28-9.63-11.26-7.386-17.62-11.982-28.56-19.188-12.64-8.328-4.44-12.906 2.76-20.386 1.88-1.958 34.64-31.748 35.26-34.45.08-.338.16-1.598-.6-2.262-.74-.666-1.84-.438-2.64-.258-1.14.256-19.12 12.152-54 35.686-5.1 3.508-9.72 5.218-13.88 5.128-4.56-.098-13.36-2.584-19.9-4.708-8-2.606-14.38-3.984-13.82-8.41.28-2.304 3.46-4.662 9.52-7.072Z"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="image-modal" id="imageModal">
+      <img class="modal-image" src="" alt="" />
+    </div>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
