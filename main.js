@@ -117,8 +117,8 @@ function drawRoadmapTimeline() {
     Q ${point3.x} ${midY2}, ${point3.x} ${point3.y}
   `;
 
-  // If footer line exists, continue path to it
-  if (footerLine) {
+  // If footer line exists and screen is wide enough, continue path to it
+  if (footerLine && window.innerWidth > 720) {
     const footerRect = footerLine.getBoundingClientRect();
     const footerPoint = {
       x: footerRect.left + footerRect.width / 2,
@@ -129,6 +129,21 @@ function drawRoadmapTimeline() {
 
     pathData += `
       L ${point3.x} ${point3.y + 50}
+      Q ${point3.x} ${midY3}, ${(point3.x + footerPoint.x) / 2} ${midY3}
+      Q ${footerPoint.x} ${midY3}, ${footerPoint.x} ${footerPoint.y}
+    `;
+  } else if (footerLine) {
+    // Mobile version - draw to footer but shorter distance
+    const footerRect = footerLine.getBoundingClientRect();
+    const footerPoint = {
+      x: footerRect.left + footerRect.width / 2,
+      y: footerRect.top - 20
+    };
+
+    const midY3 = (point3.y + footerPoint.y) / 2;
+
+    pathData += `
+      L ${point3.x} ${point3.y + 40}
       Q ${point3.x} ${midY3}, ${(point3.x + footerPoint.x) / 2} ${midY3}
       Q ${footerPoint.x} ${midY3}, ${footerPoint.x} ${footerPoint.y}
     `;
