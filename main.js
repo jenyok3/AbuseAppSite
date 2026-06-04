@@ -70,13 +70,14 @@ if (topbar) {
 
 // Draw roadmap timeline
 function drawRoadmapTimeline() {
+  const section = document.querySelector('.roadmap-section');
   const container = document.querySelector('.roadmap-container');
   const items = document.querySelectorAll('.roadmap-item');
   const timeline = document.querySelector('.roadmap-timeline');
   const path = document.querySelector('.timeline-path');
   const footerLine = document.querySelector('.footer-line');
 
-  if (!container || items.length < 3 || !timeline || !path) return;
+  if (!section || !container || items.length < 3 || !timeline || !path) return;
 
   const img1 = items[0].querySelector('.roadmap-image');
   const img2 = items[1].querySelector('.roadmap-image');
@@ -84,32 +85,32 @@ function drawRoadmapTimeline() {
 
   if (!img1 || !img2 || !img3) return;
 
-  // Get positions in viewport coordinates
+  // Отримуємо координати самої секції для точного позиціонування всередині нее
+  const sectionRect = section.getBoundingClientRect();
+
   const rect1 = img1.getBoundingClientRect();
   const rect2 = img2.getBoundingClientRect();
   const rect3 = img3.getBoundingClientRect();
 
-  // Calculate center points for each image
+  // Розраховуємо центри картинок відносно початку абсолютної координатної сітки секції
   const point1 = {
-    x: rect1.left + rect1.width / 2,
-    y: rect1.top + rect1.height / 2
+    x: rect1.left + rect1.width / 2 - sectionRect.left,
+    y: rect1.top + rect1.height / 2 - sectionRect.top
   };
 
   const point2 = {
-    x: rect2.left + rect2.width / 2,
-    y: rect2.top + rect2.height / 2
+    x: rect2.left + rect2.width / 2 - sectionRect.left,
+    y: rect2.top + rect2.height / 2 - sectionRect.top
   };
 
   const point3 = {
-    x: rect3.left + rect3.width / 2,
-    y: rect3.top + rect3.height / 2
+    x: rect3.left + rect3.width / 2 - sectionRect.left,
+    y: rect3.top + rect3.height / 2 - sectionRect.top
   };
 
-  // Create smooth curved path through all three image centers
   const midY1 = (point1.y + point2.y) / 2;
   const midY2 = (point2.y + point3.y) / 2;
 
-  // Повертаємо стару, ідеально плавну логіку для перших 3 зображень
   let pathData = `
     M ${point1.x} ${point1.y}
     Q ${point1.x} ${midY1}, ${(point1.x + point2.x) / 2} ${midY1}
@@ -118,17 +119,16 @@ function drawRoadmapTimeline() {
     Q ${point3.x} ${midY2}, ${point3.x} ${point3.y}
   `;
 
-  // Плавно доводимо лінію до футера без різких прямих ділянок (без L)
   if (footerLine) {
     const footerRect = footerLine.getBoundingClientRect();
     const footerPoint = {
-      x: footerRect.left + footerRect.width / 2,
-      y: footerRect.top - 15
+      x: footerRect.left + footerRect.width / 2 - sectionRect.left,
+      y: footerRect.top - 15 - sectionRect.top
     };
 
-    const midY3 = (point3.y + footerPoint.y) / 2;
+    const verticalDist = footerPoint.y - point3.y;
+    const midY3 = point3.y + verticalDist * 0.65;
 
-    // Використовуємо таку ж саму математику кривих (Q), що й вище
     pathData += `
       Q ${point3.x} ${midY3}, ${(point3.x + footerPoint.x) / 2} ${midY3}
       Q ${footerPoint.x} ${midY3}, ${footerPoint.x} ${footerPoint.y}
@@ -138,11 +138,10 @@ function drawRoadmapTimeline() {
   path.setAttribute('d', pathData.trim());
 }
 
-// Draw on load, resize, and scroll
+// Подія scroll повністю видалена звідси, лінія більше не перемальовується при кожному русі пальця
 if (document.querySelector('.roadmap-section')) {
   window.addEventListener('load', drawRoadmapTimeline);
   window.addEventListener('resize', drawRoadmapTimeline);
-  window.addEventListener('scroll', drawRoadmapTimeline);
   setTimeout(drawRoadmapTimeline, 100);
 }
 
@@ -153,14 +152,12 @@ const coverSection = document.querySelector('.cover');
 const roadmapSection = document.querySelector('.roadmap-section');
 
 if (coverSection && roadmapSection) {
-  // Fix scroll position on resize
   window.addEventListener('resize', () => {
     if (isScrolling) return;
 
     const currentScrollY = window.scrollY;
     const coverBottom = coverSection.offsetHeight;
 
-    // If we're between sections, snap to the closest one
     if (currentScrollY > coverBottom * 0.1 && currentScrollY < coverBottom * 0.9) {
       if (currentScrollY < coverBottom * 0.5) {
         window.scrollTo({ top: 0, behavior: 'auto' });
@@ -178,7 +175,6 @@ if (coverSection && roadmapSection) {
     const coverBottom = coverSection.offsetHeight;
     const roadmapTop = roadmapSection.offsetTop;
 
-    // Scrolling down - if past 5% of cover, snap to roadmap
     if (scrollDirection === 'down' && currentScrollY > coverBottom * 0.05 && currentScrollY < coverBottom * 0.95) {
       isScrolling = true;
       roadmapSection.scrollIntoView({ behavior: 'smooth' });
@@ -188,7 +184,6 @@ if (coverSection && roadmapSection) {
         lastScrollY = window.scrollY;
       }, 1000);
     }
-    // Scrolling up - if in first 50% of roadmap, snap to top
     else if (scrollDirection === 'up' && currentScrollY > coverBottom * 0.05 && currentScrollY < roadmapTop + (window.innerHeight * 0.5)) {
       isScrolling = true;
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -209,7 +204,6 @@ const modalImage = modal?.querySelector('.modal-image');
 const roadmapImages = document.querySelectorAll('.roadmap-image');
 
 if (modal && modalImage) {
-  // Open modal when clicking on roadmap images
   roadmapImages.forEach((img) => {
     img.addEventListener('click', () => {
       modal.style.display = 'flex';
@@ -219,7 +213,6 @@ if (modal && modalImage) {
     });
   });
 
-  // Close modal on background click
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.style.display = 'none';
@@ -227,7 +220,6 @@ if (modal && modalImage) {
     }
   });
 
-  // Close modal on Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.style.display === 'flex') {
       modal.style.display = 'none';
@@ -298,11 +290,9 @@ function applyTranslation(lang) {
   const t = translations[lang];
   if (!t) return;
 
-  // Download button
   const downloadBtn = document.querySelector('#downloadButton span');
   if (downloadBtn) downloadBtn.textContent = t.download;
 
-  // Roadmap items
   const roadmapItems = document.querySelectorAll('.roadmap-item');
   if (roadmapItems[0]) {
     const title1 = roadmapItems[0].querySelector('h2');
@@ -323,7 +313,6 @@ function applyTranslation(lang) {
     if (desc3) desc3.textContent = t.roadmap3Desc;
   }
 
-  // Footer
   const footerText = document.querySelector('.footer-text');
   if (footerText) footerText.textContent = t.footerText;
 }
@@ -335,43 +324,34 @@ const languageOptions = document.querySelectorAll('.language-option');
 const languageCurrent = document.querySelector('.language-current');
 
 if (languageButton && languageDropdown) {
-  // Toggle dropdown
   languageButton.addEventListener('click', (e) => {
     e.stopPropagation();
     languageButton.classList.toggle('active');
     languageDropdown.classList.toggle('active');
   });
 
-  // Close dropdown when clicking outside
   document.addEventListener('click', () => {
     languageButton.classList.remove('active');
     languageDropdown.classList.remove('active');
   });
 
-  // Handle language selection
   languageOptions.forEach(option => {
     option.addEventListener('click', (e) => {
       e.stopPropagation();
       const selectedLang = option.dataset.lang;
 
-      // Update UI
       languageCurrent.textContent = selectedLang.toUpperCase();
       languageOptions.forEach(opt => opt.classList.remove('selected'));
       option.classList.add('selected');
 
-      // Store selection
       localStorage.setItem('selectedLanguage', selectedLang);
-
-      // Apply translation
       applyTranslation(selectedLang);
 
-      // Close dropdown
       languageButton.classList.remove('active');
       languageDropdown.classList.remove('active');
     });
   });
 
-  // Load saved language
   const savedLang = localStorage.getItem('selectedLanguage') || 'en';
   languageCurrent.textContent = savedLang.toUpperCase();
   languageOptions.forEach(opt => {

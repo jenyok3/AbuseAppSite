@@ -323,7 +323,7 @@ img {
 }
 
 .roadmap-timeline {
-  position: fixed;
+  position: absolute; /* Змінено з fixed на absolute */
   top: 0;
   left: 0;
   width: 100%;
@@ -443,7 +443,8 @@ img {
   }
 
   .roadmap-section {
-    padding: 100px 16px 10px; /* Змінено нижній відступ */
+    min-height: auto; /* Скидаємо фіксовану висоту для мобілок */
+    padding: 100px 16px 20px; /* Робимо маленький акуратний нижній відступ */
   }
 
   .roadmap-container {
@@ -473,7 +474,7 @@ img {
 
   .footer-section {
     min-height: auto;
-    padding: 0px 20px 40px; /* Прибрано верхній відступ, додано нижній */
+    padding: 0px 20px 40px; /* Притискаємо лінію футера впритул до контенту */
   }
 }
 
