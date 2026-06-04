@@ -109,6 +109,7 @@ function drawRoadmapTimeline() {
   const midY1 = (point1.y + point2.y) / 2;
   const midY2 = (point2.y + point3.y) / 2;
 
+  // Повертаємо стару, ідеально плавну логіку для перших 3 зображень
   let pathData = `
     M ${point1.x} ${point1.y}
     Q ${point1.x} ${midY1}, ${(point1.x + point2.x) / 2} ${midY1}
@@ -117,33 +118,18 @@ function drawRoadmapTimeline() {
     Q ${point3.x} ${midY2}, ${point3.x} ${point3.y}
   `;
 
-  // If footer line exists and screen is wide enough, continue path to it
-  if (footerLine && window.innerWidth > 720) {
+  // Плавно доводимо лінію до футера без різких прямих ділянок (без L)
+  if (footerLine) {
     const footerRect = footerLine.getBoundingClientRect();
     const footerPoint = {
       x: footerRect.left + footerRect.width / 2,
-      y: footerRect.top - 20
+      y: footerRect.top - 15
     };
 
     const midY3 = (point3.y + footerPoint.y) / 2;
 
+    // Використовуємо таку ж саму математику кривих (Q), що й вище
     pathData += `
-      L ${point3.x} ${point3.y + 50}
-      Q ${point3.x} ${midY3}, ${(point3.x + footerPoint.x) / 2} ${midY3}
-      Q ${footerPoint.x} ${midY3}, ${footerPoint.x} ${footerPoint.y}
-    `;
-  } else if (footerLine) {
-    // Mobile version - draw to footer but shorter distance
-    const footerRect = footerLine.getBoundingClientRect();
-    const footerPoint = {
-      x: footerRect.left + footerRect.width / 2,
-      y: footerRect.top - 20
-    };
-
-    const midY3 = (point3.y + footerPoint.y) / 2;
-
-    pathData += `
-      L ${point3.x} ${point3.y + 40}
       Q ${point3.x} ${midY3}, ${(point3.x + footerPoint.x) / 2} ${midY3}
       Q ${footerPoint.x} ${midY3}, ${footerPoint.x} ${footerPoint.y}
     `;
