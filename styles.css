@@ -13,6 +13,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Нативна фіксація екранів */
+  scroll-snap-type: y mandatory;
 }
 
 body {
@@ -96,6 +98,8 @@ img {
   overflow: hidden;
   --cover-width: min(100vw, 1180px);
   --cover-height: calc((100svh - 92px) / 1.25);
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* Робить фіксацію м'якшою на ПК */
 }
 
 .cover-image {
@@ -320,10 +324,12 @@ img {
   align-items: center;
   justify-content: center;
   padding: 120px 20px 80px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .roadmap-timeline {
-  position: absolute; /* Змінено з fixed на absolute */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -343,9 +349,19 @@ img {
   z-index: 2;
 }
 
+/* Початковий стан карток (приховані для ефекту проявлення) */
 .roadmap-item {
   position: relative;
   width: 100%;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Клас активується послідовно через JS */
+.roadmap-item.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .roadmap-content {
@@ -443,8 +459,10 @@ img {
   }
 
   .roadmap-section {
-    min-height: auto; /* Скидаємо фіксовану висоту для мобілок */
-    padding: 100px 16px 20px; /* Робимо маленький акуратний нижній відступ */
+    min-height: auto;
+    padding: 100px 16px 20px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .roadmap-container {
@@ -474,7 +492,7 @@ img {
 
   .footer-section {
     min-height: auto;
-    padding: 0px 20px 40px; /* Притискаємо лінію футера впритул до контенту */
+    padding: 0px 20px 40px;
   }
 }
 
@@ -486,6 +504,7 @@ img {
   justify-content: center;
   padding: 80px 20px;
   z-index: 2;
+  scroll-snap-align: end; 
 }
 
 .footer-content {

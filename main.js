@@ -68,6 +68,11 @@ if (topbar) {
   });
 }
 
+// Глобальні змінні для контролю анімації лінії
+let animationProgress = 0;
+let animationFrameId = null;
+let hasTimelineAnimated = false;
+
 // Draw roadmap timeline
 function drawRoadmapTimeline() {
   const section = document.querySelector('.roadmap-section');
@@ -85,14 +90,12 @@ function drawRoadmapTimeline() {
 
   if (!img1 || !img2 || !img3) return;
 
-  // Отримуємо координати самої секції для точного позиціонування всередині нее
   const sectionRect = section.getBoundingClientRect();
 
   const rect1 = img1.getBoundingClientRect();
   const rect2 = img2.getBoundingClientRect();
   const rect3 = img3.getBoundingClientRect();
 
-  // Розраховуємо центри картинок відносно початку абсолютної координатної сітки секції
   const point1 = {
     x: rect1.left + rect1.width / 2 - sectionRect.left,
     y: rect1.top + rect1.height / 2 - sectionRect.top
@@ -136,67 +139,146 @@ function drawRoadmapTimeline() {
   }
 
   path.setAttribute('d', pathData.trim());
-}
 
-// Подія scroll повністю видалена звідси, лінія більше не перемальовується при кожному русі пальця
-if (document.querySelector('.roadmap-section')) {
-  window.addEventListener('load', drawRoadmapTimeline);
-  window.addEventListener('resize', drawRoadmapTimeline);
-  setTimeout(drawRoadmapTimeline, 100);
-}
+  let defs = timeline.querySelector('defs');
+  if (!defs) {
+    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    timeline.insertBefore(defs, timeline.firstChild);
+  }
 
-// Scroll snap to roadmap section
-let isScrolling = false;
-let lastScrollY = window.scrollY;
-const coverSection = document.querySelector('.cover');
-const roadmapSection = document.querySelector('.roadmap-section');
+  let mask = defs.querySelector('#timeline-mask');
+  if (!mask) {
+    mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+    mask.setAttribute('id', 'timeline-mask');
+    defs.appendChild(mask);
 
-if (coverSection && roadmapSection) {
-  window.addEventListener('resize', () => {
-    if (isScrolling) return;
+    const maskPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    maskPath.setAttribute('class', 'mask-path');
+    maskPath.setAttribute('fill', 'none');
+    maskPath.setAttribute('stroke', '#ffffff');
+    maskPath.setAttribute('stroke-width', '6');
+    maskPath.setAttribute('stroke-linecap', 'round');
+    maskPath.setAttribute('stroke-linejoin', 'round');
+    mask.appendChild(maskPath);
+  }
 
-    const currentScrollY = window.scrollY;
-    const coverBottom = coverSection.offsetHeight;
+  const maskPath = mask.querySelector('.mask-path');
+  maskPath.setAttribute('d', pathData.trim());
+  path.setAttribute('mask', 'url(#timeline-mask)');
 
-    if (currentScrollY > coverBottom * 0.1 && currentScrollY < coverBottom * 0.9) {
-      if (currentScrollY < coverBottom * 0.5) {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-      } else {
-        roadmapSection.scrollIntoView({ behavior: 'auto' });
+  // ВИДАЛЯЄМО СТАРІ КУТИ І НАКЛАДАЄМО ЧОРНІ ПРЯМОКУТНИКИ (щоб вирізати лінію під зображеннями)
+  const oldRects = mask.querySelectorAll('rect');
+  oldRects.forEach(r => r.remove());
+
+  [rect1, rect2, rect3].forEach(rect => {
+    const maskRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    maskRect.setAttribute('x', rect.left - sectionRect.left);
+    maskRect.setAttribute('y', rect.top - sectionRect.top);
+    maskRect.setAttribute('width', rect.width);
+    maskRect.setAttribute('height', rect.height);
+    maskRect.setAttribute('fill', '#000000'); // Чорний колір вирізає пунктир
+    mask.appendChild(maskRect);
+  });
+
+  // Створення сяючого накінечника лінії
+  let glowDot = timeline.querySelector('.timeline-glow-dot');
+  if (!glowDot) {
+    glowDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    glowDot.setAttribute('class', 'timeline-glow-dot');
+    glowDot.setAttribute('r', '7');
+    glowDot.setAttribute('fill', '#a82bff');
+    glowDot.setAttribute('style', 'filter: drop-shadow(0 0 5px #a82bff) drop-shadow(0 0 12px #a82bff); opacity: 0;');
+    timeline.appendChild(glowDot);
+  }
+
+  const totalLength = maskPath.getTotalLength();
+
+  if (hasTimelineAnimated) {
+    maskPath.style.strokeDasharray = totalLength;
+    maskPath.style.strokeDashoffset = 0;
+    glowDot.style.opacity = 0;
+    items.forEach(item => item.classList.add('visible'));
+    return;
+  }
+
+  // Функція покадрового рендерингу кінематографічної появи
+  function runIntroAnimation() {
+    const speed = totalLength / 160; 
+    animationProgress += speed;
+
+    if (animationProgress > totalLength) {
+      animationProgress = totalLength;
+    }
+
+    maskPath.style.strokeDasharray = totalLength;
+    maskPath.style.strokeDashoffset = totalLength - animationProgress;
+
+    if (animationProgress > 0) {
+      try {
+        const currentPoint = maskPath.getPointAtLength(animationProgress);
+        glowDot.setAttribute('cx', currentPoint.x);
+        glowDot.setAttribute('cy', currentPoint.y);
+
+        // Перевіряємо, чи перебуває кінчик під якимось із зображень прямо зараз
+        const inRect1 = currentPoint.x >= rect1.left - sectionRect.left && currentPoint.x <= rect1.right - sectionRect.left && currentPoint.y >= rect1.top - sectionRect.top && currentPoint.y <= rect1.bottom - sectionRect.top;
+        const inRect2 = currentPoint.x >= rect2.left - sectionRect.left && currentPoint.x <= rect2.right - sectionRect.left && currentPoint.y >= rect2.top - sectionRect.top && currentPoint.y <= rect2.bottom - sectionRect.top;
+        const inRect3 = currentPoint.x >= rect3.left - sectionRect.left && currentPoint.x <= rect3.right - sectionRect.left && currentPoint.y >= rect3.top - sectionRect.top && currentPoint.y <= rect3.bottom - sectionRect.top;
+
+        // Ховаємо сяючу кульку, якщо вона забігла під картинку контенту
+        if (animationProgress >= totalLength || inRect1 || inRect2 || inRect3) {
+          glowDot.style.opacity = 0;
+        } else {
+          glowDot.style.opacity = 1;
+        }
+
+        // Почергове проявлення елементів відповідно до поточної висоти кінчика лінії
+        if (currentPoint.y >= point1.y - 20) items[0].classList.add('visible');
+        if (currentPoint.y >= point2.y - 20) items[1].classList.add('visible');
+        if (currentPoint.y >= point3.y - 20) items[2].classList.add('visible');
+      } catch (e) {
+        // Захист від помилок розрахунку під час динамічної зміни розміру вікна
       }
     }
-  });
 
-  window.addEventListener('scroll', () => {
-    if (isScrolling) return;
-
-    const currentScrollY = window.scrollY;
-    const scrollDirection = currentScrollY > lastScrollY ? 'down' : 'up';
-    const coverBottom = coverSection.offsetHeight;
-    const roadmapTop = roadmapSection.offsetTop;
-
-    if (scrollDirection === 'down' && currentScrollY > coverBottom * 0.05 && currentScrollY < coverBottom * 0.95) {
-      isScrolling = true;
-      roadmapSection.scrollIntoView({ behavior: 'smooth' });
-
-      setTimeout(() => {
-        isScrolling = false;
-        lastScrollY = window.scrollY;
-      }, 1000);
-    }
-    else if (scrollDirection === 'up' && currentScrollY > coverBottom * 0.05 && currentScrollY < roadmapTop + (window.innerHeight * 0.5)) {
-      isScrolling = true;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      setTimeout(() => {
-        isScrolling = false;
-        lastScrollY = window.scrollY;
-      }, 1000);
+    if (animationProgress < totalLength) {
+      animationFrameId = requestAnimationFrame(runIntroAnimation);
     } else {
-      lastScrollY = currentScrollY;
+      hasTimelineAnimated = true;
+      glowDot.style.opacity = 0;
     }
-  });
+  }
+
+  if (!animationFrameId && !hasTimelineAnimated) {
+    animationFrameId = requestAnimationFrame(runIntroAnimation);
+  }
 }
+
+// Ініціалізація відстеження появи дорожньої карти на екрані
+const roadmapSectionEl = document.querySelector('.roadmap-section');
+if (roadmapSectionEl) {
+  const roadmapObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        drawRoadmapTimeline();
+      }
+    });
+  }, {
+    threshold: 0.15 
+  });
+
+  roadmapObserver.observe(roadmapSectionEl);
+}
+
+// Перерахунок координат при зміні розміру екрана
+window.addEventListener('resize', () => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+  drawRoadmapTimeline();
+});
+
+window.addEventListener('load', drawRoadmapTimeline);
 
 // Image modal functionality
 const modal = document.getElementById('imageModal');
@@ -269,6 +351,7 @@ const translations = {
     roadmap1Title: 'Dashboard',
     roadmap1Desc: 'Mass launch, Calendar>Plans list, Recent actions, Account statistics, Task list',
     roadmap2Title: 'Accounts List',
+    scrollSnapStop: 'always',
     roadmap2Desc: 'Add hashtag, notes, name, open/close account',
     roadmap3Title: 'Mass Launch',
     roadmap3Desc: 'Add/delete project, open all at once, "Mix" mode, progress bar, etc..',
