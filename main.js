@@ -166,7 +166,6 @@ function drawRoadmapTimeline() {
   maskPath.setAttribute('d', pathData.trim());
   path.setAttribute('mask', 'url(#timeline-mask)');
 
-  // ВИДАЛЯЄМО СТАРІ КУТИ І НАКЛАДАЄМО ЧОРНІ ПРЯМОКУТНИКИ (щоб вирізати лінію під зображеннями)
   const oldRects = mask.querySelectorAll('rect');
   oldRects.forEach(r => r.remove());
 
@@ -176,11 +175,10 @@ function drawRoadmapTimeline() {
     maskRect.setAttribute('y', rect.top - sectionRect.top);
     maskRect.setAttribute('width', rect.width);
     maskRect.setAttribute('height', rect.height);
-    maskRect.setAttribute('fill', '#000000'); // Чорний колір вирізає пунктир
+    maskRect.setAttribute('fill', '#000000');
     mask.appendChild(maskRect);
   });
 
-  // Створення сяючого накінечника лінії
   let glowDot = timeline.querySelector('.timeline-glow-dot');
   if (!glowDot) {
     glowDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -201,7 +199,6 @@ function drawRoadmapTimeline() {
     return;
   }
 
-  // Функція покадрового рендерингу кінематографічної появи
   function runIntroAnimation() {
     const speed = totalLength / 160; 
     animationProgress += speed;
@@ -219,25 +216,20 @@ function drawRoadmapTimeline() {
         glowDot.setAttribute('cx', currentPoint.x);
         glowDot.setAttribute('cy', currentPoint.y);
 
-        // Перевіряємо, чи перебуває кінчик під якимось із зображень прямо зараз
         const inRect1 = currentPoint.x >= rect1.left - sectionRect.left && currentPoint.x <= rect1.right - sectionRect.left && currentPoint.y >= rect1.top - sectionRect.top && currentPoint.y <= rect1.bottom - sectionRect.top;
         const inRect2 = currentPoint.x >= rect2.left - sectionRect.left && currentPoint.x <= rect2.right - sectionRect.left && currentPoint.y >= rect2.top - sectionRect.top && currentPoint.y <= rect2.bottom - sectionRect.top;
         const inRect3 = currentPoint.x >= rect3.left - sectionRect.left && currentPoint.x <= rect3.right - sectionRect.left && currentPoint.y >= rect3.top - sectionRect.top && currentPoint.y <= rect3.bottom - sectionRect.top;
 
-        // Ховаємо сяючу кульку, якщо вона забігла під картинку контенту
         if (animationProgress >= totalLength || inRect1 || inRect2 || inRect3) {
           glowDot.style.opacity = 0;
         } else {
           glowDot.style.opacity = 1;
         }
 
-        // Почергове проявлення елементів відповідно до поточної висоти кінчика лінії
         if (currentPoint.y >= point1.y - 20) items[0].classList.add('visible');
         if (currentPoint.y >= point2.y - 20) items[1].classList.add('visible');
         if (currentPoint.y >= point3.y - 20) items[2].classList.add('visible');
-      } catch (e) {
-        // Захист від помилок розрахунку під час динамічної зміни розміру вікна
-      }
+      } catch (e) {}
     }
 
     if (animationProgress < totalLength) {
@@ -253,13 +245,41 @@ function drawRoadmapTimeline() {
   }
 }
 
-// Ініціалізація відстеження появи дорожньої карти на екрані
+// Нова логіка відстеження: запускає та скидає анімацію при переходах
 const roadmapSectionEl = document.querySelector('.roadmap-section');
 if (roadmapSectionEl) {
   const roadmapObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
+        // Користувач зайшов на секцію роадмапу — запускаємо анімацію
         drawRoadmapTimeline();
+      } else {
+        // Користувач залишив секцію (наприклад, повернувся вгору) — повністю скидаємо стан
+        hasTimelineAnimated = false;
+        animationProgress = 0;
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+
+        // Миттєво ховаємо всі картки
+        const items = document.querySelectorAll('.roadmap-item');
+        items.forEach(item => item.classList.remove('visible'));
+
+        // Повністю ховаємо пунктирну маску лінії
+        const maskPath = document.querySelector('.mask-path');
+        if (maskPath) {
+          try {
+            const totalLength = maskPath.getTotalLength();
+            maskPath.style.strokeDashoffset = totalLength;
+          } catch (e) {}
+        }
+
+        // Прибираємо свічення кульки
+        const glowDot = document.querySelector('.timeline-glow-dot');
+        if (glowDot) {
+          glowDot.style.opacity = 0;
+        }
       }
     });
   }, {
