@@ -431,6 +431,10 @@ img {
     font-size: 0.85rem;
   }
 
+  .button-download {
+    display: none;
+  }
+
   .topbar.scrolled .brand-title {
     display: none;
   }
