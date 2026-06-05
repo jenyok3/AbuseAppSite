@@ -285,6 +285,28 @@ img {
   font-size: 0.88rem;
 }
 
+.download-stats-mobile {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.download-stats-mobile svg {
+  flex-shrink: 0;
+}
+
+.download-count {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
 .floating-icons {
   position: fixed;
   right: 16px;
@@ -433,6 +455,10 @@ img {
 
   .button-download {
     display: none;
+  }
+
+  .download-stats-mobile {
+    display: flex;
   }
 
   .topbar.scrolled .brand-title {

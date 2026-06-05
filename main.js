@@ -333,7 +333,7 @@ if (modal && modalImage) {
 // Fetch latest release from GitHub
 async function updateDownloadButton() {
   const downloadButton = document.getElementById('downloadButton');
-  if (!downloadButton) return;
+  const downloadCount = document.getElementById('downloadCount');
 
   try {
     const response = await fetch('https://api.github.com/repos/jenyok3/AbuseAppUpdates/releases/latest');
@@ -344,11 +344,27 @@ async function updateDownloadButton() {
       asset.name.includes('x64-setup.exe') && asset.name.startsWith('AbuseApp')
     );
 
-    if (setupAsset?.browser_download_url) {
+    // Update download button URL
+    if (setupAsset?.browser_download_url && downloadButton) {
       downloadButton.href = setupAsset.browser_download_url;
+    }
+
+    // Calculate total downloads across all assets
+    const totalDownloads = data.assets?.reduce((sum, asset) => sum + (asset.download_count || 0), 0) || 0;
+
+    // Update download count display
+    if (downloadCount) {
+      if (totalDownloads >= 1000) {
+        downloadCount.textContent = `${(totalDownloads / 1000).toFixed(1)}k`;
+      } else {
+        downloadCount.textContent = totalDownloads.toString();
+      }
     }
   } catch (error) {
     console.error('Failed to fetch latest release:', error);
+    if (downloadCount) {
+      downloadCount.textContent = '—';
+    }
   }
 }
 
