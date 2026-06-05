@@ -364,7 +364,8 @@ const translations = {
     roadmap2Desc: 'Додати хештег, нотатки, назву, відкрити/закрити акаунт',
     roadmap3Title: 'Масовий запуск',
     roadmap3Desc: 'Додати проєкт/видалити, відкрити одночасно всі, режим "Mix", прогрес бар і т.д..',
-    footerText: 'Built for fun'
+    footerText: 'Built for fun',
+    telegramLink: 'https://t.me/abuse_app'
   },
   en: {
     download: 'Download',
@@ -375,7 +376,8 @@ const translations = {
     roadmap2Desc: 'Add hashtag, notes, name, open/close account',
     roadmap3Title: 'Mass Launch',
     roadmap3Desc: 'Add/delete project, open all at once, "Mix" mode, progress bar, etc..',
-    footerText: 'Built for fun'
+    footerText: 'Built for fun',
+    telegramLink: 'https://t.me/AbuseApp'
   },
   ru: {
     download: 'Загрузить',
@@ -385,7 +387,8 @@ const translations = {
     roadmap2Desc: 'Добавить хэштег, заметки, название, открыть/закрыть аккаунт',
     roadmap3Title: 'Массовый запуск',
     roadmap3Desc: 'Добавить проект/удалить, открыть все одновременно, режим "Mix", прогресс бар и т.д..',
-    footerText: 'Built for fun'
+    footerText: 'Built for fun',
+    telegramLink: 'https://t.me/AbuseAppRu'
   }
 };
 
@@ -418,6 +421,9 @@ function applyTranslation(lang) {
 
   const footerText = document.querySelector('.footer-text');
   if (footerText) footerText.textContent = t.footerText;
+
+  const telegramLink = document.querySelector('.floating-icons a[aria-label="Telegram"]');
+  if (telegramLink && t.telegramLink) telegramLink.href = t.telegramLink;
 }
 
 // Language switcher
