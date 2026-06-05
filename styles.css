@@ -295,7 +295,8 @@ img {
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
-  pointer-events: none;
+  cursor: default;
+  user-select: none;
 }
 
 .download-stats-mobile svg {
