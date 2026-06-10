@@ -72,6 +72,7 @@ if (topbar) {
 let animationProgress = 0;
 let animationFrameId = null;
 let hasTimelineAnimated = false;
+let isRoadmapVisible = false; // Прапорець для відстеження видимості
 
 // Draw roadmap timeline
 function drawRoadmapTimeline() {
@@ -199,6 +200,12 @@ function drawRoadmapTimeline() {
     return;
   }
 
+  // Встановлюємо прихований стан, якщо ми ще не бачимо секцію
+  maskPath.style.strokeDasharray = totalLength;
+  if (!isRoadmapVisible && animationProgress === 0) {
+    maskPath.style.strokeDashoffset = totalLength;
+  }
+
   function runIntroAnimation() {
     const speed = totalLength / 160; 
     animationProgress += speed;
@@ -240,7 +247,8 @@ function drawRoadmapTimeline() {
     }
   }
 
-  if (!animationFrameId && !hasTimelineAnimated) {
+  // ЗАПУСКАЄМО АНІМАЦІЮ ТІЛЬКИ ЯКЩО СЕКЦІЯ У ПОЛІ ЗОРУ
+  if (isRoadmapVisible && !animationFrameId && !hasTimelineAnimated) {
     animationFrameId = requestAnimationFrame(runIntroAnimation);
   }
 }
@@ -250,11 +258,14 @@ const roadmapSectionEl = document.querySelector('.roadmap-section');
 if (roadmapSectionEl) {
   const roadmapObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
+      // Оновлюємо статус видимості
+      isRoadmapVisible = entry.isIntersecting; 
+
       if (entry.isIntersecting) {
         // Користувач зайшов на секцію роадмапу — запускаємо анімацію
         drawRoadmapTimeline();
       } else {
-        // Користувач залишив секцію (наприклад, повернувся вгору) — повністю скидаємо стан
+        // Користувач залишив секцію — скидаємо стан
         hasTimelineAnimated = false;
         animationProgress = 0;
         if (animationFrameId) {
@@ -298,6 +309,7 @@ window.addEventListener('resize', () => {
   drawRoadmapTimeline();
 });
 
+// На старті лише обчислюємо координати, але анімація не почнеться, поки не скролнемо
 window.addEventListener('load', drawRoadmapTimeline);
 
 // Image modal functionality
@@ -330,27 +342,36 @@ if (modal && modalImage) {
   });
 }
 
-// Fetch latest release from GitHub
+// Fetch total downloads from all releases and set latest release link
 async function updateDownloadButton() {
   const downloadButton = document.getElementById('downloadButton');
   const downloadCount = document.getElementById('downloadCount');
 
   try {
-    const response = await fetch('https://api.github.com/repos/jenyok3/AbuseAppUpdates/releases/latest');
+    const response = await fetch('https://api.github.com/repos/jenyok3/AbuseAppUpdates/releases');
     if (!response.ok) return;
 
-    const data = await response.json();
-    const setupAsset = data.assets?.find(asset =>
-      asset.name.includes('x64-setup.exe') && asset.name.startsWith('AbuseApp')
-    );
+    const allReleases = await response.json();
+    
+    // Calculate total downloads across all assets from all releases
+    let totalDownloads = 0;
+    allReleases.forEach(release => {
+      if (release.assets) {
+        totalDownloads += release.assets.reduce((sum, asset) => sum + (asset.download_count || 0), 0);
+      }
+    });
 
-    // Update download button URL
-    if (setupAsset?.browser_download_url && downloadButton) {
-      downloadButton.href = setupAsset.browser_download_url;
+    // Update download button URL using the latest release (first elements in array)
+    const latestRelease = allReleases[0];
+    if (latestRelease && latestRelease.assets) {
+      const setupAsset = latestRelease.assets.find(asset =>
+        asset.name.includes('x64-setup.exe') && asset.name.startsWith('AbuseApp')
+      );
+
+      if (setupAsset?.browser_download_url && downloadButton) {
+        downloadButton.href = setupAsset.browser_download_url;
+      }
     }
-
-    // Calculate total downloads across all assets
-    const totalDownloads = data.assets?.reduce((sum, asset) => sum + (asset.download_count || 0), 0) || 0;
 
     // Update download count display
     if (downloadCount) {
@@ -361,7 +382,7 @@ async function updateDownloadButton() {
       }
     }
   } catch (error) {
-    console.error('Failed to fetch latest release:', error);
+    console.error('Failed to fetch release data:', error);
     if (downloadCount) {
       downloadCount.textContent = '—';
     }
