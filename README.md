@@ -18,7 +18,7 @@ To learn more, view screenshots, and download the latest version, please visit o
 * 🌐 **Website:** [abuseapp.qzz.io](https://abuseapp.qzz.io)
 * 📥 **Download Latest Release:** [GitHub Releases](https://github.com/jenyok3/AbuseAppUpdates/releases/latest)
 * 💬 **Telegram Communities:**
-  * 🇬🇧 EN: [AbuseApp](https://t.me/AbuseApp)
-  * 🇺🇦 UA: [AbuseApp](https://t.me/abuse_app)
-  * 🇷🇺 RU: [AbuseApp](https://t.me/AbuseAppRu)
+  * EN: [AbuseApp](https://t.me/AbuseApp)
+  * UA: [AbuseApp](https://t.me/abuse_app)
+  * RU: [AbuseApp](https://t.me/AbuseAppRu)
 * 🛠 **Support:** [@hrprph](https://t.me/hrprph)
